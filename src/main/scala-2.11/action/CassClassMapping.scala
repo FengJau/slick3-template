@@ -1,7 +1,9 @@
 package action
 
+import slick.dbio.Effect.Read
 import slick.driver.H2Driver.api._
 import slick.lifted.ProvenShape
+import slick.profile.FixedSqlStreamingAction
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, Future }
@@ -32,8 +34,16 @@ object CassClassMapping extends App {
     // Only db.run() is real operation.
     val setupFuture: Future[Unit] = db.run(setupAction)
 
+    val f = setupFuture flatMap { _ =>
 
-    Await.result(setupFuture, Duration.Inf)
+      val queryAction = users.filter(_.name === "Jau")
+
+      db.run(queryAction.result.map(println))
+
+    }
+
+    Await.result(f, Duration.Inf)
+
   } finally db.close()
 
 }
